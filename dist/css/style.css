@@ -1,0 +1,53 @@
+/*
+ * SMACSS + SCSS starter v2.1
+ * Inspired by SMACSS http://smacss.com
+ * Author: @jonathanpath
+ * Date: 4 August 2015
+ *
+ * https://github.com/jonathanpath/SASS-SMACSS
+ * See file structure in http://jonathanpath.com/sass+smacss/scss/style.scss
+ *
+ * Coding rules : https://github.com/necolas/idiomatic-css
+ *
+ */
+/*// A debug tool for checking browser support
+@mixin debug-support-matrix($experimental: true, $ie: true) {
+  @debug  $moz-$experimental-support-for-mozilla
+          $webkit-$experimental-support-for-webkit
+          $opera-$experimental-support-for-opera
+          $microsoft-$experimental-support-for-microsoft
+          $khtml-$experimental-support-for-khtml;
+  @debug  $ie6-$legacy-support-for-ie6
+          $ie7-$legacy-support-for-ie7
+          $ie8-$legacy-support-for-ie8;
+}*/
+/* Helpers */
+/* Site settings */
+/* Vendor */
+/* Override */
+/* Base */
+/* ===========================
+   Base
+   =========================== */
+body {
+  width: 100%;
+}
+
+body p {
+  font-weight: bold;
+}
+
+/* Layouts */
+/* ==|====================
+   Layout/Constrained
+   ======================= */
+.l-constrained {
+  max-width: 71.25em;
+  margin: 0 auto;
+  padding: 0 1.25em;
+}
+
+/* Modules */
+/* ==|====================
+   Module/Box
+   ======================= */
