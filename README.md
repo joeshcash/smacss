@@ -15,3 +15,7 @@ Team
 Jonathan Path @jonathanpath / http://jonathanpath.com
 
 Laurent Sutterlity @sutterlity / http://sutterlity.fr
+
+# SMACSS template
+
+ [SMACSS](https://smacss.com/)  is a fantastic, simple and scalable organisation that I use for my differents front-end projects
