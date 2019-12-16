@@ -1,25 +1,21 @@
-// Requis
 const gulp = require("gulp");
-const uglify = require("gulp-uglify-es").default;
+const browserSync = require("browser-sync");
+const plugins = require("gulp-load-plugins")();
 
-// Include plugins
-const plugins = require("gulp-load-plugins")(); // tous les plugins de package.json
+const reload = browserSync.reload;
+const source = "./src";
+const dist = "./dist";
 
-// Variables de chemins
-const source = "./src"; // dossier de travail
-const destination = "./dist"; // dossier à livrer
-
-// Tâche "build" = SASS + autoprefixer + CSScomb + beautify (source -> destination)
 gulp.task("css", function() {
   return (
     gulp
-      .src(source + "/scss/style.scss")
+      .src(source + "/style.scss")
       //.pipe(plugins.sass({errLogToConsole: true}))
       .pipe(
         plugins.compass({
           config_file: "./config.rb",
           css: "dist/css",
-          sass: "src/scss"
+          sass: "src"
         })
       )
       .pipe(plugins.csscomb())
@@ -36,87 +32,99 @@ gulp.task("css", function() {
           "android 4"
         )
       )
-      .pipe(gulp.dest(destination + "/css/"))
+      .pipe(gulp.dest(dist + "/css/"))
+      .pipe(plugins.size())
+      .pipe(reload({ stream: true }))
+      .on("error", function(error) {
+        // Would like to catch the error here
+        console.error(error);
+        //this.emit("end");
+      })
   );
 });
 
-// Tâche "minify" = minification CSS (destination -> destination)
-gulp.task("minifyCss", function() {
+gulp.task("copyNotRetina", function() {
+  const dest = dist + "img/icons";
+
+  gulp
+    .src(dist + "/img/@2x/*.png")
+    .pipe(plugins.changed(dest))
+    .pipe(
+      plugins
+        .imageResize({
+          width: "50%",
+          height: "50%",
+          imageMagick: true
+        })
+        .pipe(gulp.dest(dest))
+    );
+});
+
+// Tâche "sprite" = spriter les icones
+gulp.task("sprite", ["copyNotRetina"], function() {
+  const options = {
+    optimizationLevel: 5,
+    progressive: true,
+    interlaced: true
+  };
+
+  gulp
+    .src(dist + "/img/icons/@2x/*.png")
+    .pipe(
+      plugins.spritesmith({ imgName: "sprite@2x.png", cssName: "_sprite.scss" })
+    )
+    .pipe(plugins.imagemin(options))
+    .pipe(gulp.dest(dist + "/img"));
+
+  sprite = gulp.src(dist + "/img/icons/*.png").pipe(
+    plugins.spritesmith({
+      imgName: "sprite.png",
+      cssName: "_sprite.scss",
+      cssSpritesheetName: "sprite",
+      cssVarMap: function(sprite) {
+        sprite.spritename = sprite.image.replace(".png", "");
+        return sprite;
+      },
+      cssTemplate: source + "helpers/_sprite.scss.mustache"
+    })
+  );
+
+  sprite.img.pipe(plugins.imagemin(options)).pipe(gulp.dest(dist + "/img"));
+  sprite.css.pipe(gulp.dest(source + "/helpers/"));
+});
+
+// Tâche "minify" = minification CSS (dist -> dist)
+gulp.task("minify", function() {
   return gulp
-    .src(destination + "/css/*.css")
+    .src(dist + "/css/*.css")
     .pipe(plugins.csso())
     .pipe(
       plugins.rename({
         suffix: ".min"
       })
     )
-    .pipe(gulp.dest(destination + "/css/"));
+    .pipe(gulp.dest(dist + "/css/"));
 });
-
-// Gulp task to minify JavaScript files
-gulp.task("minifyJs", function() {
-  return (
-    gulp
-      .src(destination + "/js/*.js")
-      // Minify the file
-      .pipe(
-        uglify().on("error", function(e) {
-          console.log(e);
-        })
-      )
-      .pipe(
-        plugins.rename({
-          suffix: ".min"
-        })
-      )
-      // Output
-      .pipe(gulp.dest(destination + "/js/"))
-  );
-});
-
-// Gulp task to minify HTML files
-gulp.task("pages", function() {
-  return gulp
-    .src(destination + "/*.html")
-    .pipe(
-      htmlmin({
-        collapseWhitespace: true,
-        removeComments: true
-      })
-    )
-    .pipe(
-      plugins.rename({
-        suffix: ".min"
-      })
-    )
-    .pipe(gulp.dest(destination + "/"));
-});
-
-// Clean output directory
-//gulp.task('clean', () => del(['dist']));
-
-// Gulp task to minify all files
-// gulp.task('default', ['clean'], function () {
-//   runSequence(
-//     'styles',
-//     'scripts',
-//     'pages'
-//   );
-// });
 
 // Tâche "build"
 gulp.task("build", ["css"]);
 
 // Tâche "prod" = Build + minify
-gulp.task("prod", ["build", "minifyCss", "minifyJs"]);
+gulp.task("prod", ["build", "minify"]);
 
-// Tâche "watch" = je surveille *less
 gulp.task("watch", function() {
+  browserSync({
+    notify: false,
+    server: { baseDir: dist }
+  });
+  gulp.watch(dist + "/*.html", reload);
+  gulp.watch(dist + "/js/*.js", reload);
   gulp.watch(
     [
-      source + "/scss/*.scss",
-      source + "/scss/layout/*.scss",
-      source + "/scss/modules/*.scss"
+      source + "/*.scss",
+      source + "/layout/*.scss",
+      source + "/modules/*.scss",
+      source + "/helpers/*.scss"
     ],
     ["build"]
   );

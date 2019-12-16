@@ -1,8 +1,0 @@
-// PIXELS TO EMS
-// $target: the desired font size for the element
-// $parent: the targets parent element font size (default: 16)
-//------------------------------------------
-
-@function pxtoem($target, $context: 16) {
-  @return ($target / $context)+0em;
-}
